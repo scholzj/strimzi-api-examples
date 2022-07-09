@@ -2,22 +2,26 @@ package cz.scholz.strimzi.api.examples;
 
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import io.fabric8.kubernetes.client.dsl.MixedOperation;
-import io.fabric8.kubernetes.client.dsl.Resource;
 import io.strimzi.api.kafka.Crds;
-import io.strimzi.api.kafka.KafkaConnectorList;
-import io.strimzi.api.kafka.model.KafkaConnector;
+import io.strimzi.api.kafka.model.KafkaConnectorBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PauseConnector {
-    public static void main(String[] args) {
-        String namespace = "myproject";
-        String crName = "my-connector";
+    private static final Logger LOGGER = LoggerFactory.getLogger(KafkaExample.class);
+    private static final String NAMESPACE = "myproject";
+    private static final String NAME = "my-connector";
 
+    public static void main(String[] args) {
         KubernetesClient client = new DefaultKubernetesClient();
-        MixedOperation<KafkaConnector, KafkaConnectorList, Resource<KafkaConnector>> op = Crds.kafkaConnectorOperation(client);
-        KafkaConnector connector = op.inNamespace(namespace).withName(crName).get();
-        connector.getSpec().setPause(true);
-        op.inNamespace(namespace).withName(crName).replace(connector);
+
+        LOGGER.info("Pausing the connector");
+        Crds.kafkaConnectorOperation(client).inNamespace(NAMESPACE).withName(NAME)
+                .edit(c -> new KafkaConnectorBuilder(c)
+                        .editSpec()
+                            .withPause(true)
+                        .endSpec()
+                        .build());
 
         client.close();
     }
