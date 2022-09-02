@@ -1,7 +1,7 @@
 package cz.scholz.strimzi.api.examples.kafka;
 
-import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.KubernetesClientBuilder;
 import io.strimzi.api.kafka.Crds;
 import io.strimzi.api.kafka.model.Kafka;
 import io.strimzi.api.kafka.model.KafkaBuilder;
@@ -18,7 +18,7 @@ public class CreateKafka {
     private static final String NAME = "my-cluster";
 
     public static void main(String[] args) {
-        try (KubernetesClient client = new DefaultKubernetesClient()) {
+        try (KubernetesClient client = new KubernetesClientBuilder().build()) {
             Kafka kafka = new KafkaBuilder()
                     .withNewMetadata()
                     .withName(NAME)
@@ -51,17 +51,10 @@ public class CreateKafka {
                     .build();
 
             LOGGER.info("Creating the Kafka cluster");
-            Crds.kafkaOperation(client).inNamespace(NAMESPACE).create(kafka);
+            Crds.kafkaOperation(client).inNamespace(NAMESPACE).resource(kafka).create();
 
             LOGGER.info("Waiting for the cluster to be ready");
-            Crds.kafkaOperation(client).inNamespace(NAMESPACE).withName(NAME).waitUntilCondition(k -> {
-                if (k.getStatus() != null && k.getStatus().getConditions() != null) {
-                    return k.getMetadata().getGeneration() == k.getStatus().getObservedGeneration()
-                            && k.getStatus().getConditions().stream().anyMatch(c -> "Ready".equals(c.getType()) && "True".equals(c.getStatus()));
-                } else {
-                    return false;
-                }
-            }, 5, TimeUnit.MINUTES);
+            Crds.kafkaOperation(client).inNamespace(NAMESPACE).withName(NAME).waitUntilCondition(Kafka.isReady(), 5, TimeUnit.MINUTES);
 
             LOGGER.info("Kafka cluster is ready");
         }
