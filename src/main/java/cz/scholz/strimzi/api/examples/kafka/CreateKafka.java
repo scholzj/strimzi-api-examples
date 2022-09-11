@@ -1,5 +1,7 @@
 package cz.scholz.strimzi.api.examples.kafka;
 
+import io.fabric8.kubernetes.api.model.Namespace;
+import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
 import io.strimzi.api.kafka.Crds;
@@ -19,6 +21,13 @@ public class CreateKafka {
 
     public static void main(String[] args) {
         try (KubernetesClient client = new KubernetesClientBuilder().build()) {
+            LOGGER.info("Checking if namespace {} exists", NAMESPACE);
+            if (client.namespaces().withName(NAMESPACE).get() == null) {
+                LOGGER.info("Creating namespace {}", NAMESPACE);
+                Namespace ns = new NamespaceBuilder().withNewMetadata().withName(NAMESPACE).endMetadata().build();
+                client.namespaces().resource(ns).create();
+            }
+
             Kafka kafka = new KafkaBuilder()
                     .withNewMetadata()
                     .withName(NAME)
@@ -47,6 +56,8 @@ public class CreateKafka {
                             .withNewUserOperator()
                             .endUserOperator()
                         .endEntityOperator()
+                        .withNewCruiseControl()
+                        .endCruiseControl()
                     .endSpec()
                     .build();
 
