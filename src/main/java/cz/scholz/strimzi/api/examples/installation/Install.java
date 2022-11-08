@@ -25,7 +25,7 @@ import java.util.List;
 public class Install {
     private static final Logger LOGGER = LoggerFactory.getLogger(Install.class);
 
-    private static final String INSTALLATION_YAML = "https://github.com/strimzi/strimzi-kafka-operator/releases/download/0.31.0/strimzi-cluster-operator-0.31.0.yaml";
+    private static final String INSTALLATION_YAML = "https://github.com/strimzi/strimzi-kafka-operator/releases/download/0.32.0/strimzi-cluster-operator-0.32.0.yaml";
     private static final String OPERATOR_NAMESPACE = "strimzi";
     private static final boolean WATCH_ALL_NAMESPACES = true; // When set to true, the operator will watch all namespaces. When set to false, it will watch only the OPERATOR_NAMESPACE namespace
 
