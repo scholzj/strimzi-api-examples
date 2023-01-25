@@ -16,7 +16,6 @@ public class DeleteRebalance {
                     .editMetadata()
                         .withName(REBALANCE_NAME)
                         .addToLabels("strimzi.io/cluster", "my-cluster")
-                        .withClusterName("my-cluster")
                     .endMetadata()
                     .withNewSpec()
                     .endSpec()
