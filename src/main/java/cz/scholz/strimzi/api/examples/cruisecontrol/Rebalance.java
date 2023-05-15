@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
 
-
 public class Rebalance {
     private static final Logger LOGGER = LoggerFactory.getLogger(Rebalance.class);
     private static final String NAMESPACE = "myproject";

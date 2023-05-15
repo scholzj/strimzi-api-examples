@@ -25,5 +25,4 @@ It can be used together with the [Fabric8 Kubernetes Client](https://github.com/
 
 ## Cruise Control examples
 
-* `CreateRebalance`: Triggers and approves cluster rebalance using Cruise Control and the `KafkaRebalance` custom resource 
-* `DeleteRebalance`: Deletes the `KafkaRebalance` resource after a rebalance
+* `Rebalance`: Triggers and approves cluster rebalance using Cruise Control and the `KafkaRebalance` custom resource. Once the rebalance is complete, it deletes it. 
