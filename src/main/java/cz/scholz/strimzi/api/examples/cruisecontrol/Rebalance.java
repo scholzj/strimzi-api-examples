@@ -12,8 +12,8 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.TimeUnit;
 
 
-public class CreateRebalance {
-    private static final Logger LOGGER = LoggerFactory.getLogger(CreateRebalance.class);
+public class Rebalance {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Rebalance.class);
     private static final String NAMESPACE = "myproject";
     private static final String REBALANCE_NAME = "myrebalance";
 
@@ -28,10 +28,10 @@ public class CreateRebalance {
                     .endSpec()
                     .build();
 
-            LOGGER.info("create rebalance");
+            LOGGER.info("Creating KafkaRebalance resource");
             Crds.kafkaRebalanceOperation(client).inNamespace(NAMESPACE).resource(rebalance).create();
 
-            LOGGER.info("wait for rebalance proposal ready");
+            LOGGER.info("Waiting for the rebalance proposal to beready");
             Crds.kafkaRebalanceOperation(client).inNamespace(NAMESPACE).withName(REBALANCE_NAME)
                     .waitUntilCondition(KafkaRebalance.isInState(KafkaRebalanceState.ProposalReady), 5, TimeUnit.MINUTES);
 
@@ -45,13 +45,15 @@ public class CreateRebalance {
                     .endSpec()
                     .build();
 
-            LOGGER.info("annotate rebalance as approved");
-            Crds.kafkaRebalanceOperation(client).inNamespace(NAMESPACE).resource(approvedRebalance).createOrReplace();
+            LOGGER.info("Approve the rebalance");
+            Crds.kafkaRebalanceOperation(client).inNamespace(NAMESPACE).resource(approvedRebalance).update();
 
-            LOGGER.info("wait for rebalance to finish");
+            LOGGER.info("Waiting for rebalance to finish");
             Crds.kafkaRebalanceOperation(client).inNamespace(NAMESPACE).withName(REBALANCE_NAME)
                     .waitUntilCondition(KafkaRebalance.isInState(KafkaRebalanceState.Ready), 5, TimeUnit.MINUTES);
-            LOGGER.info("rebalance finished");
+
+            LOGGER.info("Rebalance is finished - deleting the KafkaRebalance resource");
+            Crds.kafkaRebalanceOperation(client).inNamespace(NAMESPACE).withName(REBALANCE_NAME).delete();
         }
     }
 }

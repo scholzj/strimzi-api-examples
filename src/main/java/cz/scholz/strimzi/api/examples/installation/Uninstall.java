@@ -24,14 +24,14 @@ import java.util.List;
 public class Uninstall {
     private static final Logger LOGGER = LoggerFactory.getLogger(Uninstall.class);
 
-    private static final String INSTALLATION_YAML = "https://github.com/strimzi/strimzi-kafka-operator/releases/download/0.34.0/strimzi-cluster-operator-0.34.0.yaml";
+    private static final String INSTALLATION_YAML = "https://github.com/strimzi/strimzi-kafka-operator/releases/download/" + Install.STRIMZI_VERSION + "/strimzi-cluster-operator-" + Install.STRIMZI_VERSION + ".yaml";
     private static final String OPERATOR_NAMESPACE = "strimzi";
     private static final boolean WATCH_ALL_NAMESPACES = true; // When set to true, the operator will watch all namespaces. When set to false, it will watch only the OPERATOR_NAMESPACE namespace
 
     public static void main(String[] args) {
         try (KubernetesClient client = new KubernetesClientBuilder().build()) {
             LOGGER.info("Loading installation files from {}", INSTALLATION_YAML);
-            List<HasMetadata> resources = client.load(new BufferedInputStream(new URL(INSTALLATION_YAML).openStream())).get();
+            List<HasMetadata> resources = client.load(new BufferedInputStream(new URL(INSTALLATION_YAML).openStream())).items();
 
             for (HasMetadata resource : resources) {
                 if (resource instanceof ServiceAccount) {
@@ -56,8 +56,8 @@ public class Uninstall {
                     if ("strimzi-cluster-operator-leader-election".equals(rb.getMetadata().getName())) {
                         // The Leader Election RoleBinding is always needed only in the Cluster Operator namespace
                         //         => so we delete it from there
-                        LOGGER.info("Creating {} named {} in namespace {}", resource.getKind(), resource.getMetadata().getName(), OPERATOR_NAMESPACE);
-                        client.rbac().roleBindings().inNamespace(OPERATOR_NAMESPACE).resource(rb).createOrReplace();
+                        LOGGER.info("Deleting {} named {} in namespace {}", resource.getKind(), resource.getMetadata().getName(), OPERATOR_NAMESPACE);
+                        client.rbac().roleBindings().inNamespace(OPERATOR_NAMESPACE).resource(rb).delete();
                     } else if (WATCH_ALL_NAMESPACES) {
                         ClusterRoleBinding crb = new ClusterRoleBindingBuilder()
                                 .withNewMetadata()
