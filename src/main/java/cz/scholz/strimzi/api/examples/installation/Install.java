@@ -25,7 +25,7 @@ import java.util.List;
 public class Install {
     private static final Logger LOGGER = LoggerFactory.getLogger(Install.class);
 
-    protected static final String STRIMZI_VERSION = "0.35.1";
+    protected static final String STRIMZI_VERSION = "0.36.0";
 
     private static final String INSTALLATION_YAML = "https://github.com/strimzi/strimzi-kafka-operator/releases/download/" + STRIMZI_VERSION + "/strimzi-cluster-operator-" + STRIMZI_VERSION + ".yaml";
     private static final String OPERATOR_NAMESPACE = "strimzi";
