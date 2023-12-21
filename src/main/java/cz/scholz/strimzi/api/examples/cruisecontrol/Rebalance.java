@@ -30,7 +30,7 @@ public class Rebalance {
             LOGGER.info("Creating KafkaRebalance resource");
             Crds.kafkaRebalanceOperation(client).inNamespace(NAMESPACE).resource(rebalance).create();
 
-            LOGGER.info("Waiting for the rebalance proposal to beready");
+            LOGGER.info("Waiting for the rebalance proposal to be ready");
             Crds.kafkaRebalanceOperation(client).inNamespace(NAMESPACE).withName(REBALANCE_NAME)
                     .waitUntilCondition(KafkaRebalance.isInState(KafkaRebalanceState.ProposalReady), 5, TimeUnit.MINUTES);
 

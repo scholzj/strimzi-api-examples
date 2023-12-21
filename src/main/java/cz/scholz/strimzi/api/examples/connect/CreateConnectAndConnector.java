@@ -57,7 +57,7 @@ public class CreateConnectAndConnector {
                             .withNewDockerOutput()
                                 .withImage("ttl.sh/strimzi-api-examples:24h")
                             .endDockerOutput()
-                            .withPlugins(new PluginBuilder().withName("echo-plugin").withArtifacts(new JarArtifactBuilder().withUrl("https://github.com/scholzj/echo-sink/releases/download/1.2.0/echo-sink-1.2.0.jar").build()).build(),
+                            .withPlugins(new PluginBuilder().withName("echo-plugin").withArtifacts(new JarArtifactBuilder().withUrl("https://github.com/scholzj/echo-sink/releases/download/1.6.0/echo-sink-1.6.0.jar").build()).build(),
                                     new PluginBuilder().withName("timer-plugin").withArtifacts(new TgzArtifactBuilder().withUrl("https://repo1.maven.org/maven2/org/apache/camel/kafkaconnector/camel-timer-kafka-connector/0.11.5/camel-timer-kafka-connector-0.11.5-package.tar.gz").build()).build())
                         .endBuild()
                     .endSpec()
