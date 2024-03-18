@@ -3,8 +3,8 @@ package cz.scholz.strimzi.api.examples.kafka;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
 import io.strimzi.api.kafka.Crds;
-import io.strimzi.api.kafka.model.Kafka;
-import io.strimzi.api.kafka.model.KafkaBuilder;
+import io.strimzi.api.kafka.model.kafka.Kafka;
+import io.strimzi.api.kafka.model.kafka.KafkaBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

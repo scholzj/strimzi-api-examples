@@ -3,8 +3,8 @@ package cz.scholz.strimzi.api.examples.connect;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
 import io.strimzi.api.kafka.Crds;
-import io.strimzi.api.kafka.model.ConnectorState;
-import io.strimzi.api.kafka.model.KafkaConnectorBuilder;
+import io.strimzi.api.kafka.model.common.ConnectorState;
+import io.strimzi.api.kafka.model.connector.KafkaConnectorBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
