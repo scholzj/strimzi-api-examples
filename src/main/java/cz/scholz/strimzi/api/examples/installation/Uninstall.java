@@ -105,6 +105,9 @@ public class Uninstall {
                     LOGGER.info("Unknown resource {} named {}", resource.getKind(), resource.getMetadata().getName());
                 }
             }
+
+            LOGGER.info("Deleting namespace {}", OPERATOR_NAMESPACE);
+            client.namespaces().withName(OPERATOR_NAMESPACE).delete();
         } catch (IOException e) {
             LOGGER.error("Something went wrong", e);
         }
