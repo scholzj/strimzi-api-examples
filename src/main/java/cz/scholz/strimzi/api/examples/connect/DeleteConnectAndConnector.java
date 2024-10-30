@@ -16,10 +16,10 @@ public class DeleteConnectAndConnector {
 
     public static void main(String[] args) {
         try (KubernetesClient client = new KubernetesClientBuilder().build()) {
-            LOGGER.info("Creating the Timer connector");
+            LOGGER.info("Deleting the Timer connector");
             Crds.kafkaConnectorOperation(client).inNamespace(NAMESPACE).withName(TIMER_CONNECTOR_NAME).delete();
 
-            LOGGER.info("Creating the Echo connector");
+            LOGGER.info("Deleting the Echo connector");
             Crds.kafkaConnectorOperation(client).inNamespace(NAMESPACE).withName(ECHO_CONNECTOR_NAME).delete();
 
             LOGGER.info("Deleting the topic");
