@@ -13,7 +13,7 @@ It can be used together with the [Fabric8 Kubernetes Client](https://github.com/
 ## Kafka examples
 
 * `CreateKafka`: Deploys Kafka cluster
-* `CreateKafka`: Updates the Kafka cluster and waits for the rolling update to complete
+* `UpdateKafka`: Updates the Kafka cluster and waits for the rolling update to complete
 * `DeleteKafka`: Deletes the Kafka cluster
 
 ## Connect examples
