@@ -6,8 +6,8 @@ import io.strimzi.api.kafka.Crds;
 import io.strimzi.api.kafka.model.connect.KafkaConnect;
 import io.strimzi.api.kafka.model.connect.KafkaConnectBuilder;
 import io.strimzi.api.kafka.model.connect.build.JarArtifactBuilder;
+import io.strimzi.api.kafka.model.connect.build.MavenArtifactBuilder;
 import io.strimzi.api.kafka.model.connect.build.PluginBuilder;
-import io.strimzi.api.kafka.model.connect.build.TgzArtifactBuilder;
 import io.strimzi.api.kafka.model.connector.KafkaConnector;
 import io.strimzi.api.kafka.model.connector.KafkaConnectorBuilder;
 import io.strimzi.api.kafka.model.topic.KafkaTopic;
@@ -56,9 +56,10 @@ public class CreateConnectAndConnector {
                         .withNewBuild()
                             .withNewDockerOutput()
                                 .withImage("ttl.sh/strimzi-api-examples:24h")
+                                .withAdditionalKanikoOptions("--ignore-path=/usr/bin/newuidmap", "--ignore-path=/usr/bin/newgidmap")
                             .endDockerOutput()
                             .withPlugins(new PluginBuilder().withName("echo-plugin").withArtifacts(new JarArtifactBuilder().withUrl("https://github.com/scholzj/echo-sink/releases/download/1.6.0/echo-sink-1.6.0.jar").build()).build(),
-                                    new PluginBuilder().withName("timer-plugin").withArtifacts(new TgzArtifactBuilder().withUrl("https://repo1.maven.org/maven2/org/apache/camel/kafkaconnector/camel-timer-kafka-connector/0.11.5/camel-timer-kafka-connector-0.11.5-package.tar.gz").build()).build())
+                                    new PluginBuilder().withName("timer-plugin").withArtifacts(new MavenArtifactBuilder().withGroup("org.apache.camel.kafkaconnector").withArtifact("camel-timer-source-kafka-connector").withVersion("4.10.3").build()).build())
                         .endBuild()
                     .endSpec()
                     .build();
@@ -118,19 +119,8 @@ public class CreateConnectAndConnector {
 
             Map<String, Object> timerConnectorConfig = new HashMap<>();
             timerConnectorConfig.put("topics", "my-topic");
-            timerConnectorConfig.put("camel.source.path.timerName", "timer");
-            timerConnectorConfig.put("key.converter", "org.apache.kafka.connect.storage.StringConverter");
-            timerConnectorConfig.put("value.converter", "org.apache.kafka.connect.json.JsonConverter");
-            timerConnectorConfig.put("value.converter.schemas.enable", false);
-            timerConnectorConfig.put("transforms", "HoistField,InsertField,ReplaceField");
-            timerConnectorConfig.put("transforms.HoistField.type", "org.apache.kafka.connect.transforms.HoistField$Value");
-            timerConnectorConfig.put("transforms.HoistField.field", "originalValue");
-            timerConnectorConfig.put("transforms.InsertField.type", "org.apache.kafka.connect.transforms.InsertField$Value");
-            timerConnectorConfig.put("transforms.InsertField.timestamp.field", "timestamp");
-            timerConnectorConfig.put("transforms.InsertField.static.field", "message");
-            timerConnectorConfig.put("transforms.InsertField.static.value", "Hello World");
-            timerConnectorConfig.put("transforms.ReplaceField.type", "org.apache.kafka.connect.transforms.ReplaceField$Value");
-            timerConnectorConfig.put("transforms.ReplaceField.blacklist", "originalValue");
+            timerConnectorConfig.put("camel.kamelet.timer-source.period", "1000");
+            timerConnectorConfig.put("camel.kamelet.timer-source.message", "Hello World");
 
             KafkaConnector timerConnector = new KafkaConnectorBuilder()
                     .withNewMetadata()
@@ -139,7 +129,7 @@ public class CreateConnectAndConnector {
                         .withLabels(Map.of("strimzi.io/cluster", CONNECT_NAME))
                     .endMetadata()
                     .withNewSpec()
-                        .withClassName("CamelTimerSourceConnector")
+                        .withClassName("CamelTimersourceSourceConnector")
                         .withTasksMax(1)
                         .withConfig(timerConnectorConfig)
                     .endSpec()

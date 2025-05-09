@@ -10,11 +10,13 @@ public class DeleteKafka {
     private static final Logger LOGGER = LoggerFactory.getLogger(DeleteKafka.class);
     private static final String NAMESPACE = "myproject";
     private static final String NAME = "my-cluster";
+    private static final String POOL_NAME = "mixed";
 
     public static void main(String[] args) {
         try (KubernetesClient client = new KubernetesClientBuilder().build()) {
             LOGGER.info("Deleting the cluster");
             Crds.kafkaOperation(client).inNamespace(NAMESPACE).withName(NAME).delete();
+            Crds.kafkaNodePoolOperation(client).inNamespace(NAMESPACE).withName(POOL_NAME).delete();
         }
     }
 }
