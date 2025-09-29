@@ -14,6 +14,7 @@ import io.fabric8.kubernetes.api.model.rbac.ClusterRoleBindingBuilder;
 import io.fabric8.kubernetes.api.model.rbac.RoleBinding;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
+import io.fabric8.kubernetes.client.dsl.Updatable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +26,7 @@ import java.util.List;
 public class Install {
     private static final Logger LOGGER = LoggerFactory.getLogger(Install.class);
 
-    protected static final String STRIMZI_VERSION = "0.47.0";
+    protected static final String STRIMZI_VERSION = "0.48.0";
 
     private static final String INSTALLATION_YAML = "https://github.com/strimzi/strimzi-kafka-operator/releases/download/" + STRIMZI_VERSION + "/strimzi-cluster-operator-" + STRIMZI_VERSION + ".yaml";
     private static final String OPERATOR_NAMESPACE = "strimzi";
@@ -36,7 +37,7 @@ public class Install {
             LOGGER.info("Checking if namespace {} exists", OPERATOR_NAMESPACE);
             if (client.namespaces().withName(OPERATOR_NAMESPACE).get() == null) {
                 LOGGER.info("Creating namespace {}", OPERATOR_NAMESPACE);
-                client.namespaces().resource(new NamespaceBuilder().withNewMetadata().withName(OPERATOR_NAMESPACE).endMetadata().build()).create();
+                client.namespaces().resource(new NamespaceBuilder().withNewMetadata().withName(OPERATOR_NAMESPACE).endMetadata().build()).createOr(Updatable::update);
             }
 
             LOGGER.info("Loading installation files from {}", INSTALLATION_YAML);
@@ -47,16 +48,16 @@ public class Install {
                     LOGGER.info("Creating {} named {} in namespace {}", resource.getKind(), resource.getMetadata().getName(), OPERATOR_NAMESPACE);
                     resource.getMetadata().setNamespace(OPERATOR_NAMESPACE);
                     ServiceAccount sa = (ServiceAccount) resource;
-                    client.serviceAccounts().inNamespace(OPERATOR_NAMESPACE).resource(sa).create();
+                    client.serviceAccounts().inNamespace(OPERATOR_NAMESPACE).resource(sa).createOr(Updatable::update);
                 } else if (resource instanceof ClusterRole) {
                     LOGGER.info("Creating {} named {}", resource.getKind(), resource.getMetadata().getName());
                     ClusterRole cr = (ClusterRole) resource;
-                    client.rbac().clusterRoles().resource(cr).create();
+                    client.rbac().clusterRoles().resource(cr).createOr(Updatable::update);
                 } else if (resource instanceof ClusterRoleBinding) {
                     LOGGER.info("Creating {} named {}", resource.getKind(), resource.getMetadata().getName());
                     ClusterRoleBinding crb = (ClusterRoleBinding) resource;
                     crb.getSubjects().forEach(sbj -> sbj.setNamespace(OPERATOR_NAMESPACE));
-                    client.rbac().clusterRoleBindings().resource(crb).create();
+                    client.rbac().clusterRoleBindings().resource(crb).createOr(Updatable::update);
                 } else if (resource instanceof RoleBinding) {
                     resource.getMetadata().setNamespace(OPERATOR_NAMESPACE);
                     RoleBinding rb = (RoleBinding) resource;
@@ -65,7 +66,7 @@ public class Install {
                     if ("strimzi-cluster-operator-leader-election".equals(rb.getMetadata().getName()))  {
                         // The Leader Election RoleBinding is always needed only in the Cluster Operator namespace
                         LOGGER.info("Creating {} named {} in namespace {}", resource.getKind(), resource.getMetadata().getName(), OPERATOR_NAMESPACE);
-                        client.rbac().roleBindings().inNamespace(OPERATOR_NAMESPACE).resource(rb).create();
+                        client.rbac().roleBindings().inNamespace(OPERATOR_NAMESPACE).resource(rb).createOr(Updatable::update);
                     } else if (WATCH_ALL_NAMESPACES) {
                         ClusterRoleBinding crb = new ClusterRoleBindingBuilder()
                                 .withNewMetadata()
@@ -78,24 +79,24 @@ public class Install {
                                 .build();
 
                         LOGGER.info("Creating {} named {}", crb.getKind(), crb.getMetadata().getName());
-                        client.rbac().clusterRoleBindings().resource(crb).create();
+                        client.rbac().clusterRoleBindings().resource(crb).createOr(Updatable::update);
                     } else {
                         // RoleBindings not related to leader election (but related to operands) need to be installed to
                         // watched namespace(s). In this example, the Cluster Operator is configured to watch its own
                         // namespace only. In case you want to watch it other namespace(s), these RoleBindings need to
                         // be created there.
                         LOGGER.info("Creating {} named {} in namespace {}", resource.getKind(), resource.getMetadata().getName(), OPERATOR_NAMESPACE);
-                        client.rbac().roleBindings().inNamespace(OPERATOR_NAMESPACE).resource(rb).create();
+                        client.rbac().roleBindings().inNamespace(OPERATOR_NAMESPACE).resource(rb).createOr(Updatable::update);
                     }
                 } else if (resource instanceof CustomResourceDefinition) {
                     LOGGER.info("Creating {} named {}", resource.getKind(), resource.getMetadata().getName());
                     CustomResourceDefinition crd = (CustomResourceDefinition) resource;
-                    client.apiextensions().v1().customResourceDefinitions().resource(crd).create();
+                    client.apiextensions().v1().customResourceDefinitions().resource(crd).createOr(Updatable::update);
                 } else if (resource instanceof ConfigMap) {
                     LOGGER.info("Creating {} named {} in namespace {}", resource.getKind(), resource.getMetadata().getName(), OPERATOR_NAMESPACE);
                     resource.getMetadata().setNamespace(OPERATOR_NAMESPACE);
                     ConfigMap cm = (ConfigMap) resource;
-                    client.configMaps().inNamespace(OPERATOR_NAMESPACE).resource(cm).create();
+                    client.configMaps().inNamespace(OPERATOR_NAMESPACE).resource(cm).createOr(Updatable::update);
                 } else if (resource instanceof Deployment) {
                     LOGGER.info("Creating {} named {} in namespace {}", resource.getKind(), resource.getMetadata().getName(), OPERATOR_NAMESPACE);
                     resource.getMetadata().setNamespace(OPERATOR_NAMESPACE);
@@ -108,7 +109,7 @@ public class Install {
                         envVar.setValue("*");
                     }
 
-                    client.apps().deployments().inNamespace(OPERATOR_NAMESPACE).resource(dep).create();
+                    client.apps().deployments().inNamespace(OPERATOR_NAMESPACE).resource(dep).createOr(Updatable::update);
                 } else {
                     LOGGER.info("Unknown resource {} named {}", resource.getKind(), resource.getMetadata().getName());
                 }
