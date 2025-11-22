@@ -4,7 +4,6 @@ import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
-import io.strimzi.api.ResourceAnnotations;
 import io.strimzi.api.ResourceLabels;
 import io.strimzi.api.kafka.Crds;
 import io.strimzi.api.kafka.model.kafka.Kafka;
@@ -56,7 +55,6 @@ public class CreateKafka {
                     .withNewMetadata()
                         .withName(NAME)
                         .withNamespace(NAMESPACE)
-                        .withAnnotations(Map.of(ResourceAnnotations.ANNO_STRIMZI_IO_KRAFT, "enabled", ResourceAnnotations.ANNO_STRIMZI_IO_NODE_POOLS, "enabled"))
                     .endMetadata()
                     .withNewSpec()
                         .withNewKafka()
