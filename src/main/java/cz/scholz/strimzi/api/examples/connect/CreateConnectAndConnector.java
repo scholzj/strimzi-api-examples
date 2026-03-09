@@ -31,10 +31,6 @@ public class CreateConnectAndConnector {
     public static void main(String[] args) {
         try (KubernetesClient client = new KubernetesClientBuilder().build()) {
             Map<String, Object> connectConfig = new HashMap<>();
-            connectConfig.put("group.id", "connect-cluster");
-            connectConfig.put("offset.storage.topic", "connect-cluster-offsets");
-            connectConfig.put("config.storage.topic", "connect-cluster-configs");
-            connectConfig.put("status.storage.topic", "connect-cluster-status");
             connectConfig.put("config.storage.replication.factor", -1);
             connectConfig.put("offset.storage.replication.factor", -1);
             connectConfig.put("status.storage.replication.factor", -1);
@@ -52,6 +48,10 @@ public class CreateConnectAndConnector {
                     .withNewSpec()
                         .withReplicas(1)
                         .withBootstrapServers("my-cluster-kafka-bootstrap:9092")
+                        .withGroupId("connect-cluster")
+                        .withConfigStorageTopic("connect-cluster-configs")
+                        .withOffsetStorageTopic("connect-cluster-offsets")
+                        .withStatusStorageTopic("connect-cluster-status")
                         .withConfig(connectConfig)
                         .withNewBuild()
                             .withNewDockerOutput()
