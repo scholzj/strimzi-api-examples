@@ -1,7 +1,9 @@
 package cz.scholz.strimzi.api.examples.connect;
 
+import io.fabric8.kubernetes.api.model.SecurityContextBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
+import io.fabric8.kubernetes.client.dsl.Updatable;
 import io.strimzi.api.kafka.Crds;
 import io.strimzi.api.kafka.model.connect.KafkaConnect;
 import io.strimzi.api.kafka.model.connect.KafkaConnectBuilder;
@@ -16,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -56,16 +59,20 @@ public class CreateConnectAndConnector {
                         .withNewBuild()
                             .withNewDockerOutput()
                                 .withImage("ttl.sh/strimzi-api-examples:24h")
-                                .withAdditionalKanikoOptions("--ignore-path=/usr/bin/newuidmap", "--ignore-path=/usr/bin/newgidmap")
                             .endDockerOutput()
                             .withPlugins(new PluginBuilder().withName("echo-plugin").withArtifacts(new JarArtifactBuilder().withUrl("https://github.com/scholzj/echo-sink/releases/download/1.6.0/echo-sink-1.6.0.jar").build()).build(),
                                     new PluginBuilder().withName("timer-plugin").withArtifacts(new MavenArtifactBuilder().withGroup("org.apache.camel.kafkaconnector").withArtifact("camel-timer-source-kafka-connector").withVersion("4.10.3").build()).build())
                         .endBuild()
+                        .withNewTemplate()
+                            .withNewBuildContainer()
+                                .withSecurityContext(new SecurityContextBuilder().withRunAsUser(1000L).withRunAsGroup(1000L).withAllowPrivilegeEscalation().withNewCapabilities().addAllToAdd(List.of("SETUID", "SETGID", "DAC_OVERRIDE", "SYS_ADMIN")).endCapabilities().build())
+                            .endBuildContainer()
+                        .endTemplate()
                     .endSpec()
                     .build();
 
             LOGGER.info("Creating the Kafka Connect cluster");
-            Crds.kafkaConnectOperation(client).inNamespace(NAMESPACE).resource(connect).create();
+            Crds.kafkaConnectOperation(client).inNamespace(NAMESPACE).resource(connect).createOr(Updatable::update);
 
             LOGGER.info("Waiting for the Connect cluster to be ready");
             Crds.kafkaConnectOperation(client).inNamespace(NAMESPACE).withName(CONNECT_NAME).waitUntilCondition(KafkaConnect.isReady(), 10, TimeUnit.MINUTES);
@@ -88,7 +95,7 @@ public class CreateConnectAndConnector {
                     .build();
 
             LOGGER.info("Creating the topic");
-            Crds.topicOperation(client).inNamespace(NAMESPACE).resource(topic).create();
+            Crds.topicOperation(client).inNamespace(NAMESPACE).resource(topic).createOr(Updatable::update);
 
             LOGGER.info("Waiting for the topic to be ready");
             Crds.topicOperation(client).inNamespace(NAMESPACE).withName(TOPIC_NAME).waitUntilCondition(KafkaTopic.isReady(), 5, TimeUnit.MINUTES);
@@ -110,7 +117,7 @@ public class CreateConnectAndConnector {
                     .build();
 
             LOGGER.info("Creating the Echo connector");
-            Crds.kafkaConnectorOperation(client).inNamespace(NAMESPACE).resource(echoConnector).create();
+            Crds.kafkaConnectorOperation(client).inNamespace(NAMESPACE).resource(echoConnector).createOr(Updatable::update);
 
             LOGGER.info("Waiting for the Echo connector to be ready");
             Crds.kafkaConnectorOperation(client).inNamespace(NAMESPACE).withName(ECHO_CONNECTOR_NAME).waitUntilCondition(KafkaConnector.isReady(), 5, TimeUnit.MINUTES);
@@ -136,7 +143,7 @@ public class CreateConnectAndConnector {
                     .build();
 
             LOGGER.info("Creating the Timer connector");
-            Crds.kafkaConnectorOperation(client).inNamespace(NAMESPACE).resource(timerConnector).create();
+            Crds.kafkaConnectorOperation(client).inNamespace(NAMESPACE).resource(timerConnector).createOr(Updatable::update);
 
             LOGGER.info("Waiting for the Timer connector to be ready");
             Crds.kafkaConnectorOperation(client).inNamespace(NAMESPACE).withName(TIMER_CONNECTOR_NAME).waitUntilCondition(KafkaConnector.isReady(), 5, TimeUnit.MINUTES);

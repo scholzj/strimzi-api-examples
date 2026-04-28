@@ -4,6 +4,7 @@ import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
+import io.fabric8.kubernetes.client.dsl.Updatable;
 import io.strimzi.api.ResourceLabels;
 import io.strimzi.api.kafka.Crds;
 import io.strimzi.api.kafka.model.kafka.Kafka;
@@ -49,7 +50,7 @@ public class CreateKafka {
                     .build();
 
             LOGGER.info("Creating the Kafka Node Pool");
-            Crds.kafkaNodePoolOperation(client).inNamespace(NAMESPACE).resource(pool).create();
+            Crds.kafkaNodePoolOperation(client).inNamespace(NAMESPACE).resource(pool).createOr(Updatable::update);
 
             Kafka kafka = new KafkaBuilder()
                     .withNewMetadata()
@@ -77,7 +78,7 @@ public class CreateKafka {
                     .build();
 
             LOGGER.info("Creating the Kafka cluster");
-            Crds.kafkaOperation(client).inNamespace(NAMESPACE).resource(kafka).create();
+            Crds.kafkaOperation(client).inNamespace(NAMESPACE).resource(kafka).createOr(Updatable::update);
 
             LOGGER.info("Waiting for the cluster to be ready");
             Crds.kafkaOperation(client).inNamespace(NAMESPACE).withName(NAME).waitUntilCondition(Kafka.isReady(), 5, TimeUnit.MINUTES);
